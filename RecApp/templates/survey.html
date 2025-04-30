@@ -1,0 +1,16 @@
+<h2>Survey</h2>
+<form method="post">
+  {% csrf_token %}
+  {% for genre, items in items_by_genre.items %}
+    <h3>{{ genre }}</h3>
+    <ul>
+      {% for item in items %}
+        <li>
+          <input type="checkbox" name="selected_items" value="{{ item.title }}">
+          {{ item.title }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endfor %}
+  <button type="submit">Done</button>
+</form>

@@ -1,0 +1,10 @@
+<h2>Dashboard</h2>
+<p>Welcome, {{ request.user.username }}!</p>
+<h2>Recommended Items</h2>
+<ul>
+    {% csrf_token %}
+    {% for title, score in recommendations %}
+        <li>{{ title }} (Similarity: {{ score }})</li>
+    {% endfor %}
+</ul>
+<a href="{% url 'logout' %}">Log out</a>
