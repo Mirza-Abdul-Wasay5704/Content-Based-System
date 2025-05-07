@@ -4,41 +4,76 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Food Preferences Survey - FoodMatch</title>
+        <title>Food Survey - FoodMatch</title>
         <link rel="stylesheet" href="{% static 'css/style.css' %}">
         <style>
-        .genre-section {
-            margin-bottom: 25px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-            border-left: 4px solid #e67e22;
-        }
-        
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            margin: 10px 0;
-        }
-        
-        .checkbox-item input[type="checkbox"] {
-            margin-right: 10px;
-            transform: scale(1.2);
-        }
-        
-        .progress-bar {
-            background-color: #eee;
-            height: 6px;
-            border-radius: 3px;
-            margin: 20px 0;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            background-color: #e67e22;
-            height: 100%;
-            width: 50%; /* Adjust dynamically if possible */
-        }
+            .survey-form {
+                margin-top: 20px;
+            }
+            
+            .food-category {
+                margin-bottom: 30px;
+                padding-left: 15px;
+                border-left: 4px solid #e67e22;
+            }
+            
+            .category-title {
+                font-size: 18px;
+                color: #2c3e50;
+                margin-bottom: 15px;
+                font-weight: bold;
+            }
+            
+            .food-item {
+                margin-bottom: 12px;
+                display: flex;
+                align-items: center;
+            }
+            
+            .food-item label {
+                margin-left: 8px;
+                cursor: pointer;
+                color: #34495e;
+            }
+            
+            .food-item input[type="checkbox"] {
+                cursor: pointer;
+            }
+            
+            .submit-section {
+                margin-top: 30px;
+                text-align: center;
+            }
+            
+            .btn-submit {
+                background-color: #e67e22;
+                color: white;
+                padding: 12px 25px;
+                border: none;
+                border-radius: 4px;
+                font-size: 16px;
+                cursor: pointer;
+                transition: background-color 0.3s;
+            }
+            
+            .btn-submit:hover {
+                background-color: #d35400;
+            }
+            
+            .progress-bar {
+                width: 100%;
+                background-color: #ecf0f1;
+                height: 8px;
+                border-radius: 4px;
+                margin: 20px 0;
+                overflow: hidden;
+            }
+            
+            .progress {
+                height: 100%;
+                background-color: #e67e22;
+                width: 50%; /* Adjust based on actual progress */
+            }
         </style>
     </head>
     <body>
@@ -57,30 +92,25 @@
         <div class="container">
             <div class="main-content">
                 <h2>Tell Us Your Food Preferences</h2>
-                <p>Select the foods you enjoy to help us create better recommendations for you.</p>
                 <div class="progress-bar">
-                    <div class="progress-fill"></div>
+                    <div class="progress"></div>
                 </div>
-                <form method="post">
+                <p>Select the foods you enjoy to help us create better recommendations for you.</p>
+                <form method="post" action="{% url 'survey' %}" class="survey-form">
                     {% csrf_token %}
                     {% for genre, items in items_by_genre.items %}
-                        <div class="genre-section">
-                            <h3>{{ genre }}</h3>
-                            <ul>
-                                {% for item in items %}
-                                    <li class="checkbox-item">
-                                        <input type="checkbox"
-                                               name="selected_items"
-                                               value="{{ item.title }}"
-                                               id="item-{{ forloop.counter }}">
-                                        <label for="item-{{ forloop.counter }}">{{ item.title }}</label>
-                                    </li>
-                                {% endfor %}
-                            </ul>
+                        <div class="food-category">
+                            <div class="category-title">{{ genre }}</div>
+                            {% for item in items %}
+                                <div class="food-item">
+                                    <input type="checkbox" id="item_{{ item.id }}" name="selected_items" value="{{ item.title }}">
+                                    <label for="item_{{ item.id }}">{{ item.title }}</label>
+                                </div>
+                            {% endfor %}
                         </div>
                     {% endfor %}
-                    <div style="text-align: center; margin-top: 30px;">
-                        <button type="submit">Save Preferences</button>
+                    <div class="submit-section">
+                        <button type="submit" class="btn-submit">Save Preferences</button>
                     </div>
                 </form>
             </div>

@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Dashboard - FoodMatch</title>
+        <title>Dashboard - Dastarkhwan</title>
         <link rel="stylesheet" href="{% static 'css/style.css' %}">
         <style>
         .dashboard-header {
@@ -29,10 +29,8 @@
             background-color: #fff;
             border-radius: 5px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             transition: transform 0.2s;
+            cursor: pointer;
         }
         
         .recommendation-card:hover {
@@ -40,17 +38,60 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
+        .recommendation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
         .food-title {
             font-weight: bold;
             color: #2c3e50;
+            flex-grow: 1;
+            margin-right: 15px;
         }
         
         .similarity-score {
             background-color: #e67e22;
             color: white;
-            padding: 5px 10px;
+            padding: 5px 12px;
             border-radius: 20px;
             font-size: 14px;
+            min-width: 45px;
+            text-align: center;
+            margin-right: 15px;
+        }
+        
+        .recommendation-details {
+            margin-top: 15px;
+            border-top: 1px solid #ecf0f1;
+            padding-top: 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out, margin-top 0.4s ease-in-out, padding-top 0.4s ease-in-out;
+            opacity: 0;
+        }
+        
+        .recommendation-card.expanded .recommendation-details {
+            max-height: 1000px; /* Large enough to accommodate content */
+            opacity: 1;
+            margin-top: 15px;
+            padding-top: 15px;
+        }
+        
+        .detail-section {
+            margin-bottom: 10px;
+        }
+        
+        .detail-title {
+            font-weight: bold;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+        
+        .detail-content {
+            line-height: 1.5;
+            color: #34495e;
         }
         
         .action-buttons {
@@ -80,12 +121,22 @@
         .btn:hover {
             opacity: 0.9;
         }
+
+        .expand-icon {
+            transition: transform 0.3s ease;
+            font-size: 20px;
+            color: #7f8c8d;
+        }
+
+        .expanded .expand-icon {
+            transform: rotate(180deg);
+        }
         </style>
     </head>
     <body>
         <header class="header">
             <div class="container">
-                <h1>FoodMatch</h1>
+                <h1>Dastarkhwan</h1>
                 <p>Discover your next favorite dish</p>
             </div>
         </header>
@@ -105,10 +156,23 @@
                 <div class="recommendation-list">
                     {% csrf_token %}
                     {% if recommendations %}
-                        {% for title, score in recommendations %}
-                            <div class="recommendation-card">
-                                <div class="food-title">{{ title }}</div>
-                                <div class="similarity-score">{{ score }}</div>
+                        {% for recommendation in recommendations %}
+                            <div class="recommendation-card" onclick="toggleDetails(this)">
+                                <div class="recommendation-header">
+                                    <div class="food-title"; style="font-size: 20px;">{{ recommendation.title }}</div>
+                                    <div class="similarity-score">{{ recommendation.score }}</div>
+                                    <div class="expand-icon">▼</div>
+                                </div>
+                                <div class="recommendation-details">
+                                    <div class="detail-section">
+                                        <div class="detail-title">Ingredients & Key Elements:</div>
+                                        <div class="detail-content">{{ recommendation.item.ner }}</div>
+                                    </div>
+                                    <div class="detail-section">
+                                        <div class="detail-title">Directions:</div>
+                                        <div class="detail-content">{{ recommendation.item.directions }}</div>
+                                    </div>
+                                </div>
                             </div>
                         {% endfor %}
                     {% else %}
@@ -126,8 +190,17 @@
         </div>
         <footer class="footer">
             <div class="container">
-                <p>&copy; 2025 FoodMatch - Your Personal Food Recommendation Service</p>
+                <p>&copy; 2025 Dastarkhwan - Your Personal Food Recommendation Service</p>
             </div>
         </footer>
+
+        <script>
+            function toggleDetails(card) {
+                // Toggle the 'expanded' class on the card
+                card.classList.toggle('expanded');
+                
+                // No need to manually toggle display - CSS transitions will handle it
+            }
+        </script>
     </body>
 </html>

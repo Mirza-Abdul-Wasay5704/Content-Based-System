@@ -13,7 +13,6 @@ from RecApp.vector_db.faiss_handler import FaissHandler
 def home(request):
     return render(request, "home.html")
 
-
 def signup_view(request):
     if request.method == "POST":
         username = request.POST["username"]
@@ -24,6 +23,10 @@ def signup_view(request):
             return redirect("signup")
 
         user = User.objects.create_user(username=username, password=password)
+        
+        # Create user profile only if it doesn't exist yet
+        User_Profile.objects.get_or_create(user=user)
+        
         login(request, user)
         return redirect("survey")
 
@@ -71,7 +74,7 @@ def survey_view(request):
 
             if embeddings:
                 user_embedding = np.mean(embeddings, axis=0)
-                user_profile.embedding = user_embedding.tobytes()
+                user_profile.set_embedding(user_embedding)
                 user_profile.survey_completed = True
                 user_profile.save()
                 return redirect("dashboard")
@@ -90,12 +93,39 @@ def survey_view(request):
 
 def dashboard_view(request):
     user_profile = User_Profile.objects.get(user=request.user)
+    
+    # Check if user has completed the survey
+    if not user_profile.survey_completed:
+        return redirect("survey")
+        
+    # Get the user embedding
     user_embedding = user_profile.get_embedding()
 
     # Get top 5 recommendations from FAISS
     faiss_handler = FaissHandler(
         "RecApp/vector_db/item_index.faiss", "RecApp/vector_db/titles.txt"
     )
-    recommendations = faiss_handler.get_top_k(user_embedding, k=5)
+    raw_recommendations = faiss_handler.get_top_k(user_embedding, k=5)
+    
+    # Format recommendations with full item details for the template
+    formatted_recommendations = []
+    for title, score in raw_recommendations:
+        try:
+            # Lookup the item details from the database
+            item = Item_Profile.objects.get(title=title)
+            
+            # Format the score to 2 decimal places if it's a float
+            if isinstance(score, float):
+                score = round(score, 2)
+                
+            # Add to formatted recommendations
+            formatted_recommendations.append({
+                'title': title,
+                'score': score,
+                'item': item
+            })
+        except Item_Profile.DoesNotExist:
+            # Handle case where item in FAISS doesn't exist in database
+            continue
 
-    return render(request, "dashboard.html", {"recommendations": recommendations})
+    return render(request, "dashboard.html", {"recommendations": formatted_recommendations})
