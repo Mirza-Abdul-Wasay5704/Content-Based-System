@@ -1,16 +1,94 @@
-<h2>Survey</h2>
-<form method="post">
-  {% csrf_token %}
-  {% for genre, items in items_by_genre.items %}
-    <h3>{{ genre }}</h3>
-    <ul>
-      {% for item in items %}
-        <li>
-          <input type="checkbox" name="selected_items" value="{{ item.title }}">
-          {{ item.title }}
-        </li>
-      {% endfor %}
-    </ul>
-  {% endfor %}
-  <button type="submit">Done</button>
-</form>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Food Preferences Survey - FoodMatch</title>
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <style>
+        .genre-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #e67e22;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        
+        .progress-bar {
+            background-color: #eee;
+            height: 6px;
+            border-radius: 3px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background-color: #e67e22;
+            height: 100%;
+            width: 50%; /* Adjust dynamically if possible */
+        }
+        </style>
+    </head>
+    <body>
+        <header class="header">
+            <div class="container">
+                <h1>FoodMatch</h1>
+                <p>Discover your next favorite dish</p>
+            </div>
+        </header>
+        <nav class="nav">
+            <div class="container">
+                <a href="{% url 'dashboard' %}">Dashboard</a>
+                <a href="{% url 'logout' %}">Log Out</a>
+            </div>
+        </nav>
+        <div class="container">
+            <div class="main-content">
+                <h2>Tell Us Your Food Preferences</h2>
+                <p>Select the foods you enjoy to help us create better recommendations for you.</p>
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    {% for genre, items in items_by_genre.items %}
+                        <div class="genre-section">
+                            <h3>{{ genre }}</h3>
+                            <ul>
+                                {% for item in items %}
+                                    <li class="checkbox-item">
+                                        <input type="checkbox"
+                                               name="selected_items"
+                                               value="{{ item.title }}"
+                                               id="item-{{ forloop.counter }}">
+                                        <label for="item-{{ forloop.counter }}">{{ item.title }}</label>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button type="submit">Save Preferences</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <footer class="footer">
+            <div class="container">
+                <p>&copy; 2025 FoodMatch - Your Personal Food Recommendation Service</p>
+            </div>
+        </footer>
+    </body>
+</html>
