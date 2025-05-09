@@ -8,4 +8,5 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     path("survey/", views.survey_view, name="survey"),
     path("dashboard/", views.dashboard_view, name="dashboard"),
+    path("api/update-embedding/", views.update_user_embedding, name="update_embedding"),
 ]

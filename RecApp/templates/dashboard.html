@@ -157,7 +157,9 @@
                     {% csrf_token %}
                     {% if recommendations %}
                         {% for recommendation in recommendations %}
-                            <div class="recommendation-card" onclick="toggleDetails(this)">
+                            <div class="recommendation-card"
+                                 data-title="{{ recommendation.title }}"
+                                 onclick="handleItemClick(this)">
                                 <div class="recommendation-header">
                                     <div class="food-title"; style="font-size: 20px;">{{ recommendation.title }}</div>
                                     <div class="similarity-score">{{ recommendation.score }}</div>
@@ -193,13 +195,54 @@
                 <p>&copy; 2025 Dastarkhwan - Your Personal Food Recommendation Service</p>
             </div>
         </footer>
-
         <script>
-            function toggleDetails(card) {
-                // Toggle the 'expanded' class on the card
+            // Get the CSRF token for AJAX requests
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            const csrftoken = getCookie('csrftoken');
+            
+            // Handle item click - toggle details and update user embedding
+            function handleItemClick(card) {
+                // Toggle the 'expanded' class on the card for visual effect
                 card.classList.toggle('expanded');
                 
-                // No need to manually toggle display - CSS transitions will handle it
+                // Get the item title from the data attribute
+                const itemTitle = card.getAttribute('data-title');
+                
+                // Only send the update request if the card is being expanded
+                if (card.classList.contains('expanded')) {
+                    // Send AJAX request to update user embedding
+                    fetch('{% url "update_embedding" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken,
+                        },
+                        body: JSON.stringify({
+                            item_title: itemTitle
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Embedding updated:', data);
+                        // No UI change needed as per requirements
+                    })
+                    .catch(error => {
+                        console.error('Error updating embedding:', error);
+                    });
+                }
             }
         </script>
     </body>
