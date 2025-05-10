@@ -9,4 +9,9 @@ urlpatterns = [
     path("survey/", views.survey_view, name="survey"),
     path("dashboard/", views.dashboard_view, name="dashboard"),
     path("api/update-embedding/", views.update_user_embedding, name="update_embedding"),
+    path(
+        "api/load-more/",
+        views.load_more_recommendations,
+        name="load_more_recommendations",
+    ),
 ]

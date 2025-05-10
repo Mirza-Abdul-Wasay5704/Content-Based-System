@@ -137,6 +137,60 @@ def dashboard_view(request):
     )
 
 
+@login_required
+def load_more_recommendations(request):
+    try:
+        # Get offset parameter from query string (number of items to skip)
+        offset = int(request.GET.get("offset", 0))
+
+        # Get count parameter (number of items to fetch)
+        count = int(request.GET.get("count", 5))
+
+        # Get user profile and embedding
+        user_profile = User_Profile.objects.get(user=request.user)
+        user_embedding = user_profile.get_embedding()
+
+        # Get recommendations from offset to offset+count
+        faiss_handler = FaissHandler(
+            "RecApp/vector_db/item_index.faiss", "RecApp/vector_db/titles.txt"
+        )
+        # We need to fetch more recommendations than just the requested count + offset
+        raw_recommendations = faiss_handler.get_top_k(user_embedding, k=offset + count)
+
+        # Skip the already displayed recommendations
+        raw_recommendations = raw_recommendations[offset : offset + count]
+
+        # Format the recommendations for JSON response
+        formatted_recommendations = []
+        for title, score in raw_recommendations:
+            try:
+                # Lookup the item details from the database
+                item = Item_Profile.objects.get(title=title)
+
+                # Format the score to 2 decimal places
+                if isinstance(score, float):
+                    score = round(score, 2)
+
+                # Add to formatted recommendations
+                formatted_recommendations.append(
+                    {
+                        "title": title,
+                        "score": score,
+                        "ner": item.ner,
+                        "directions": item.directions,
+                    }
+                )
+            except Item_Profile.DoesNotExist:
+                continue
+
+        return JsonResponse(
+            {"status": "success", "recommendations": formatted_recommendations}
+        )
+
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+
 @require_POST
 @login_required
 def update_user_embedding(request):

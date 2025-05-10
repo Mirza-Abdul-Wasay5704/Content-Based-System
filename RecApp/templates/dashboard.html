@@ -131,6 +131,27 @@
         .expanded .expand-icon {
             transform: rotate(180deg);
         }
+
+        .loading-indicator {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #e67e22;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
         </style>
     </head>
     <body>
@@ -153,7 +174,7 @@
                     <div class="user-welcome">Welcome, {{ request.user.username }}!</div>
                 </div>
                 <p>Based on your preferences, we think you might enjoy these dishes:</p>
-                <div class="recommendation-list">
+                <div class="recommendation-list" id="recommendation-list">
                     {% csrf_token %}
                     {% if recommendations %}
                         {% for recommendation in recommendations %}
@@ -183,6 +204,11 @@
                             <a href="{% url 'survey' %}" class="btn btn-primary">Take Survey Now</a>
                         </div>
                     {% endif %}
+                </div>
+                <!-- Loading indicator for when fetching more recommendations -->
+                <div class="loading-indicator" id="loading-indicator">
+                    <div class="loading-spinner"></div>
+                    <div>Loading more recommendations...</div>
                 </div>
                 <div class="action-buttons">
                     {% comment %} <a href="{% url 'survey' %}" class="btn btn-primary">Update Preferences</a> {% endcomment %}
@@ -244,6 +270,82 @@
                     });
                 }
             }
+
+            // Infinite scrolling implementation
+            let offset = {% if recommendations %}{{ recommendations|length }}{% else %}0{% endif %};
+            let loadingMore = false;
+            let noMoreResults = false;
+
+            // Function to load more recommendations
+            function loadMoreRecommendations() {
+                if (loadingMore || noMoreResults) return;
+                
+                loadingMore = true;
+                document.getElementById('loading-indicator').style.display = 'block';
+                
+                fetch(`{% url 'load_more_recommendations' %}?offset=${offset}&count=5`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            const recommendationsList = document.getElementById('recommendation-list');
+                            
+                            // Check if we got any new recommendations
+                            if (data.recommendations.length === 0) {
+                                noMoreResults = true;
+                                document.getElementById('loading-indicator').innerHTML = 'No more recommendations available.';
+                                return;
+                            }
+                            
+                            // Append each new recommendation to the list
+                            data.recommendations.forEach(recommendation => {
+                                const card = document.createElement('div');
+                                card.className = 'recommendation-card';
+                                card.setAttribute('data-title', recommendation.title);
+                                card.onclick = function() { handleItemClick(this); };
+                                
+                                card.innerHTML = `
+                                    <div class="recommendation-header">
+                                        <div class="food-title" style="font-size: 20px;">${recommendation.title}</div>
+                                        <div class="similarity-score">${recommendation.score}</div>
+                                        <div class="expand-icon">▼</div>
+                                    </div>
+                                    <div class="recommendation-details">
+                                        <div class="detail-section">
+                                            <div class="detail-title">Ingredients & Key Elements:</div>
+                                            <div class="detail-content">${recommendation.ner}</div>
+                                        </div>
+                                        <div class="detail-section">
+                                            <div class="detail-title">Directions:</div>
+                                            <div class="detail-content">${recommendation.directions}</div>
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                recommendationsList.appendChild(card);
+                            });
+                            
+                            // Update the offset for the next API call
+                            offset += data.recommendations.length;
+                            
+                        } else {
+                            console.error('Error loading more recommendations:', data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    })
+                    .finally(() => {
+                        loadingMore = false;
+                        document.getElementById('loading-indicator').style.display = noMoreResults ? 'block' : 'none';
+                    });
+            }
+
+            // Detect when user scrolls near the bottom of the page
+            window.addEventListener('scroll', function() {
+                if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+                    loadMoreRecommendations();
+                }
+            });
         </script>
     </body>
 </html>
