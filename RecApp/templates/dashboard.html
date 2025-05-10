@@ -152,6 +152,33 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* New styles for food images */
+        .food-image-container {
+            margin-bottom: 15px;
+            border-radius: 5px;
+            overflow: hidden;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .food-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .food-image:hover {
+            transform: scale(1.05);
+        }
+        
+        .recommendation-content {
+            display: flex;
+            flex-direction: column;
+        }
         </style>
     </head>
     <body>
@@ -181,19 +208,24 @@
                             <div class="recommendation-card"
                                  data-title="{{ recommendation.title }}"
                                  onclick="handleItemClick(this)">
-                                <div class="recommendation-header">
-                                    <div class="food-title"; style="font-size: 20px;">{{ recommendation.title }}</div>
-                                    <div class="similarity-score">{{ recommendation.score }}</div>
-                                    <div class="expand-icon">▼</div>
+                                <div class="food-image-container">
+                                    <img src="{{ recommendation.image_url }}" alt="{{ recommendation.title }}" class="food-image">
                                 </div>
-                                <div class="recommendation-details">
-                                    <div class="detail-section">
-                                        <div class="detail-title">Ingredients & Key Elements:</div>
-                                        <div class="detail-content">{{ recommendation.item.ner }}</div>
+                                <div class="recommendation-content">
+                                    <div class="recommendation-header">
+                                        <div class="food-title" style="font-size: 20px;">{{ recommendation.title }}</div>
+                                        <div class="similarity-score">{{ recommendation.score }}</div>
+                                        <div class="expand-icon">▼</div>
                                     </div>
-                                    <div class="detail-section">
-                                        <div class="detail-title">Directions:</div>
-                                        <div class="detail-content">{{ recommendation.item.directions }}</div>
+                                    <div class="recommendation-details">
+                                        <div class="detail-section">
+                                            <div class="detail-title">Ingredients & Key Elements:</div>
+                                            <div class="detail-content">{{ recommendation.item.ner }}</div>
+                                        </div>
+                                        <div class="detail-section">
+                                            <div class="detail-title">Directions:</div>
+                                            <div class="detail-content">{{ recommendation.item.directions }}</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -304,19 +336,24 @@
                                 card.onclick = function() { handleItemClick(this); };
                                 
                                 card.innerHTML = `
-                                    <div class="recommendation-header">
-                                        <div class="food-title" style="font-size: 20px;">${recommendation.title}</div>
-                                        <div class="similarity-score">${recommendation.score}</div>
-                                        <div class="expand-icon">▼</div>
+                                    <div class="food-image-container">
+                                        <img src="${recommendation.image_url}" alt="${recommendation.title}" class="food-image">
                                     </div>
-                                    <div class="recommendation-details">
-                                        <div class="detail-section">
-                                            <div class="detail-title">Ingredients & Key Elements:</div>
-                                            <div class="detail-content">${recommendation.ner}</div>
+                                    <div class="recommendation-content">
+                                        <div class="recommendation-header">
+                                            <div class="food-title" style="font-size: 20px;">${recommendation.title}</div>
+                                            <div class="similarity-score">${recommendation.score}</div>
+                                            <div class="expand-icon">▼</div>
                                         </div>
-                                        <div class="detail-section">
-                                            <div class="detail-title">Directions:</div>
-                                            <div class="detail-content">${recommendation.directions}</div>
+                                        <div class="recommendation-details">
+                                            <div class="detail-section">
+                                                <div class="detail-title">Ingredients & Key Elements:</div>
+                                                <div class="detail-content">${recommendation.ner}</div>
+                                            </div>
+                                            <div class="detail-section">
+                                                <div class="detail-title">Directions:</div>
+                                                <div class="detail-content">${recommendation.directions}</div>
+                                            </div>
                                         </div>
                                     </div>
                                 `;

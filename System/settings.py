@@ -122,3 +122,10 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+# Add at the end of System/settings.py
+
+# Pexels API configuration
+PEXELS_API_KEY = 'XkDh39Er5xeGq7iMkQ5W4DUzM9bmfgHtzUymz6a2lYGGbLYkgQjUsCfB'  # Your Pexels API key here or set it as an environment variable

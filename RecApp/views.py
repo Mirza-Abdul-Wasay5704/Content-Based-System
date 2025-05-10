@@ -97,6 +97,15 @@ def survey_view(request):
     return render(request, "survey.html", {"items_by_genre": items_by_genre})
 
 
+
+
+
+
+# Modify these parts of RecApp/views.py
+
+# Add this import at the top with other imports
+from .utils import load_item_embeddings, get_food_image
+
 def dashboard_view(request):
     user_profile = User_Profile.objects.get(user=request.user)
 
@@ -123,10 +132,18 @@ def dashboard_view(request):
             # Format the score to 2 decimal places if it's a float
             if isinstance(score, float):
                 score = round(score, 2)
+                
+            # Get image URL from Pexels API
+            image_url = get_food_image(title)
 
             # Add to formatted recommendations
             formatted_recommendations.append(
-                {"title": title, "score": score, "item": item}
+                {
+                    "title": title, 
+                    "score": score, 
+                    "item": item,
+                    "image_url": image_url  # Add the image URL
+                }
             )
         except Item_Profile.DoesNotExist:
             # Handle case where item in FAISS doesn't exist in database
@@ -170,6 +187,9 @@ def load_more_recommendations(request):
                 # Format the score to 2 decimal places
                 if isinstance(score, float):
                     score = round(score, 2)
+                    
+                # Get image URL from Pexels API
+                image_url = get_food_image(title)
 
                 # Add to formatted recommendations
                 formatted_recommendations.append(
@@ -178,6 +198,7 @@ def load_more_recommendations(request):
                         "score": score,
                         "ner": item.ner,
                         "directions": item.directions,
+                        "image_url": image_url  # Add the image URL 
                     }
                 )
             except Item_Profile.DoesNotExist:
@@ -189,6 +210,10 @@ def load_more_recommendations(request):
 
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
+    
+
+
+
 
 
 @require_POST
