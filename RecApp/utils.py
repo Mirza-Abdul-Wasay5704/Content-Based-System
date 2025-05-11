@@ -29,7 +29,7 @@ def get_food_image(food_title):
         return "/api/placeholder/400/300"
 
     search_term = food_title.split("(")[0].strip()
-    search_query = f"{search_term}"
+    search_query = f"{search_term} food"
 
     url = "https://api.pexels.com/v1/search"
     headers = {"Authorization": api_key}

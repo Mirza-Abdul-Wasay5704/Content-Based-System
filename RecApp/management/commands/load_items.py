@@ -6,7 +6,7 @@ from RecApp.models import Item_Profile
 
 
 class Command(BaseCommand):
-    help = "Load Preprocessed_items.csv into the database"
+    help = "Load Preprocessed_items.csv into the database, optimized."
 
     def handle(self, *args, **kwargs):
         file_path = os.path.join(
@@ -15,13 +15,36 @@ class Command(BaseCommand):
 
         with open(file_path, newline="", encoding="utf-8") as csvfile:
             reader = csv.DictReader(csvfile)
-            for row in reader:
-                Item_Profile.objects.update_or_create(
-                    title=row["title"],
-                    defaults={
-                        "ner": row["NER"],
-                        "directions": row["directions"],
-                        "genre": row["genre"],
-                    },
+            items = []
+            processed_lines = 0
+
+            for index, row in enumerate(reader, start=1):
+                try:
+                    item = Item_Profile(
+                        title=row["title"].title(),
+                        ner=row["NER"].title(),
+                        directions=row["directions"],
+                        genre=row["genre"].title(),
+                    )
+                    items.append(item)
+
+                    if len(items) >= 100:
+                        Item_Profile.objects.bulk_create(items)
+                        items.clear()
+
+                except Exception as e:
+                    self.stdout.write(
+                        self.style.ERROR(f"Error processing row {index}: {e}")
+                    )
+                    continue
+
+                processed_lines += 1
+
+            if items:
+                Item_Profile.objects.bulk_create(items)
+
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Finished loading. Processed {processed_lines} rows."
                 )
-        self.stdout.write(self.style.SUCCESS("Data loaded successfully."))
+            )

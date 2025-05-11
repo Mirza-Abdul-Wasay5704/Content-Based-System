@@ -4,6 +4,8 @@ import numpy as np
 
 df = pd.read_csv("../data/Item_Embeddings.csv")
 
+df["title"] = df["title"].str.title()
+
 titles = df["title"].tolist()
 embeddings = np.ascontiguousarray(
     df.drop(columns=["title"]).to_numpy().astype("float32")

@@ -67,6 +67,9 @@ def logout_view(request):
 def survey_view(request):
     user_profile = User_Profile.objects.get(user=request.user)
 
+    if user_profile.survey_completed:
+        return redirect("dashboard")
+
     if request.method == "POST":
         selected_titles = request.POST.getlist("selected_items")
         if selected_titles:
@@ -90,6 +93,8 @@ def survey_view(request):
 
     for genre in genres:
         items = Item_Profile.objects.filter(genre=genre).order_by("?")[:4]
+        for item in items:
+            item.image_url = get_food_image(item.title)
         items_by_genre[genre] = items
 
     return render(request, "survey.html", {"items_by_genre": items_by_genre})
