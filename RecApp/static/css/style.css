@@ -1,13 +1,3 @@
-/* Food Recommendation Website Theme
-   Colors: Professional palette with food-inspired accents
-   - Primary: #2c3e50 (Dark Blue)
-   - Secondary: #e67e22 (Orange)
-   - Background: #f5f5f5 (Light Gray)
-   - Text: #333333 (Dark Gray)
-   - Accent: #27ae60 (Green)
-*/
-
-/* Global Styles */
 body {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f5f5f5;
@@ -23,7 +13,6 @@ body {
     padding: 20px;
 }
 
-/* Header Styles */
 .header {
     background-color: #2c3e50;
     color: white;
@@ -44,7 +33,6 @@ body {
     text-decoration: none;
 }
 
-/* Navigation */
 .nav {
     background-color: #233140;
     padding: 10px 0;
@@ -63,7 +51,6 @@ body {
     color: #e67e22;
 }
 
-/* Main Content */
 .main-content {
     background-color: white;
     border-radius: 5px;
@@ -84,7 +71,6 @@ h3 {
     margin-top: 20px;
 }
 
-/* Forms */
 form {
     margin-top: 20px;
 }
@@ -115,7 +101,6 @@ button[type="submit"]:hover {
     background-color: #d35400;
 }
 
-/* Message Alerts */
 .message {
     padding: 10px;
     margin: 10px 0;
@@ -131,7 +116,6 @@ button[type="submit"]:hover {
     background-color: #27ae60;
 }
 
-/* Checkbox Lists */
 ul {
     list-style-type: none;
     padding: 0;
@@ -141,7 +125,6 @@ li {
     margin: 10px 0;
 }
 
-/* Recommendations */
 .recommendation-item {
     display: flex;
     justify-content: space-between;
@@ -158,7 +141,6 @@ li {
     font-weight: bold;
 }
 
-/* Footer */
 .footer {
     background-color: #2c3e50;
     color: white;
@@ -167,7 +149,6 @@ li {
     margin-top: 30px;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     .container {
         padding: 10px;

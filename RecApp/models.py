@@ -1,7 +1,7 @@
-    
 from django.db import models
 from django.contrib.auth.models import User
 import numpy as np
+
 
 class Item_Profile(models.Model):
     title = models.CharField(max_length=255, unique=True)
@@ -11,6 +11,7 @@ class Item_Profile(models.Model):
 
     def __str__(self):
         return self.title
+
 
 class User_Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -24,4 +25,4 @@ class User_Profile(models.Model):
         self.embedding = embedding.tobytes()
 
     def get_embedding(self):
-        return np.frombuffer(self.embedding, dtype='float32')
+        return np.frombuffer(self.embedding, dtype="float32")

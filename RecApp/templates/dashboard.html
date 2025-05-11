@@ -49,6 +49,7 @@
             color: #2c3e50;
             flex-grow: 1;
             margin-right: 15px;
+            font-size: 20px;
         }
         
         .similarity-score {
@@ -190,7 +191,6 @@
         </header>
         <nav class="nav">
             <div class="container">
-                {% comment %} <a href="{% url 'survey' %}">Update Preferences</a> {% endcomment %}
                 <a href="{% url 'logout' %}">Log Out</a>
             </div>
         </nav>
@@ -209,11 +209,13 @@
                                  data-title="{{ recommendation.title }}"
                                  onclick="handleItemClick(this)">
                                 <div class="food-image-container">
-                                    <img src="{{ recommendation.image_url }}" alt="{{ recommendation.title }}" class="food-image">
+                                    <img src="{{ recommendation.image_url }}"
+                                         alt="{{ recommendation.title }}"
+                                         class="food-image">
                                 </div>
                                 <div class="recommendation-content">
                                     <div class="recommendation-header">
-                                        <div class="food-title" style="font-size: 20px;">{{ recommendation.title }}</div>
+                                        <div class="food-title">{{ recommendation.title }}</div>
                                         <div class="similarity-score">{{ recommendation.score }}</div>
                                         <div class="expand-icon">▼</div>
                                     </div>
@@ -237,13 +239,11 @@
                         </div>
                     {% endif %}
                 </div>
-                <!-- Loading indicator for when fetching more recommendations -->
                 <div class="loading-indicator" id="loading-indicator">
                     <div class="loading-spinner"></div>
                     <div>Loading more recommendations...</div>
                 </div>
                 <div class="action-buttons">
-                    {% comment %} <a href="{% url 'survey' %}" class="btn btn-primary">Update Preferences</a> {% endcomment %}
                     <a href="{% url 'logout' %}" class="btn btn-secondary">Log Out</a>
                 </div>
             </div>
@@ -254,7 +254,6 @@
             </div>
         </footer>
         <script>
-            // Get the CSRF token for AJAX requests
             function getCookie(name) {
                 let cookieValue = null;
                 if (document.cookie && document.cookie !== '') {
@@ -271,17 +270,12 @@
             }
             const csrftoken = getCookie('csrftoken');
             
-            // Handle item click - toggle details and update user embedding
             function handleItemClick(card) {
-                // Toggle the 'expanded' class on the card for visual effect
                 card.classList.toggle('expanded');
                 
-                // Get the item title from the data attribute
                 const itemTitle = card.getAttribute('data-title');
                 
-                // Only send the update request if the card is being expanded
                 if (card.classList.contains('expanded')) {
-                    // Send AJAX request to update user embedding
                     fetch('{% url "update_embedding" %}', {
                         method: 'POST',
                         headers: {
@@ -295,7 +289,6 @@
                     .then(response => response.json())
                     .then(data => {
                         console.log('Embedding updated:', data);
-                        // No UI change needed as per requirements
                     })
                     .catch(error => {
                         console.error('Error updating embedding:', error);
@@ -303,12 +296,10 @@
                 }
             }
 
-            // Infinite scrolling implementation
             let offset = {% if recommendations %}{{ recommendations|length }}{% else %}0{% endif %};
             let loadingMore = false;
             let noMoreResults = false;
 
-            // Function to load more recommendations
             function loadMoreRecommendations() {
                 if (loadingMore || noMoreResults) return;
                 
@@ -321,14 +312,12 @@
                         if (data.status === 'success') {
                             const recommendationsList = document.getElementById('recommendation-list');
                             
-                            // Check if we got any new recommendations
                             if (data.recommendations.length === 0) {
                                 noMoreResults = true;
                                 document.getElementById('loading-indicator').innerHTML = 'No more recommendations available.';
                                 return;
                             }
                             
-                            // Append each new recommendation to the list
                             data.recommendations.forEach(recommendation => {
                                 const card = document.createElement('div');
                                 card.className = 'recommendation-card';
@@ -341,7 +330,7 @@
                                     </div>
                                     <div class="recommendation-content">
                                         <div class="recommendation-header">
-                                            <div class="food-title" style="font-size: 20px;">${recommendation.title}</div>
+                                            <div class="food-title">${recommendation.title}</div>
                                             <div class="similarity-score">${recommendation.score}</div>
                                             <div class="expand-icon">▼</div>
                                         </div>
@@ -361,7 +350,6 @@
                                 recommendationsList.appendChild(card);
                             });
                             
-                            // Update the offset for the next API call
                             offset += data.recommendations.length;
                             
                         } else {
@@ -377,7 +365,6 @@
                     });
             }
 
-            // Detect when user scrolls near the bottom of the page
             window.addEventListener('scroll', function() {
                 if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
                     loadMoreRecommendations();

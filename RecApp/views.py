@@ -11,7 +11,7 @@ import json
 import numpy as np
 
 from .models import User_Profile, Item_Profile
-from .utils import load_item_embeddings
+from .utils import load_item_embeddings, get_food_image
 from RecApp.vector_db.faiss_handler import FaissHandler
 
 
@@ -30,7 +30,6 @@ def signup_view(request):
 
         user = User.objects.create_user(username=username, password=password)
 
-        # Create user profile only if it doesn't exist yet
         User_Profile.objects.get_or_create(user=user)
 
         login(request, user)
@@ -85,7 +84,6 @@ def survey_view(request):
                 user_profile.save()
                 return redirect("dashboard")
 
-    # GET request: show items
     items_by_genre = {}
     all_items = Item_Profile.objects.all()
     genres = all_items.values_list("genre", flat=True).distinct()
@@ -97,56 +95,38 @@ def survey_view(request):
     return render(request, "survey.html", {"items_by_genre": items_by_genre})
 
 
-
-
-
-
-# Modify these parts of RecApp/views.py
-
-# Add this import at the top with other imports
-from .utils import load_item_embeddings, get_food_image
-
 def dashboard_view(request):
     user_profile = User_Profile.objects.get(user=request.user)
 
-    # Check if user has completed the survey
     if not user_profile.survey_completed:
         return redirect("survey")
 
-    # Get the user embedding
     user_embedding = user_profile.get_embedding()
 
-    # Get top 5 recommendations from FAISS
     faiss_handler = FaissHandler(
         "RecApp/vector_db/item_index.faiss", "RecApp/vector_db/titles.txt"
     )
     raw_recommendations = faiss_handler.get_top_k(user_embedding, k=5)
 
-    # Format recommendations with full item details for the template
     formatted_recommendations = []
     for title, score in raw_recommendations:
         try:
-            # Lookup the item details from the database
             item = Item_Profile.objects.get(title=title)
 
-            # Format the score to 2 decimal places if it's a float
             if isinstance(score, float):
                 score = round(score, 2)
-                
-            # Get image URL from Pexels API
+
             image_url = get_food_image(title)
 
-            # Add to formatted recommendations
             formatted_recommendations.append(
                 {
-                    "title": title, 
-                    "score": score, 
+                    "title": title,
+                    "score": score,
                     "item": item,
-                    "image_url": image_url  # Add the image URL
+                    "image_url": image_url,
                 }
             )
         except Item_Profile.DoesNotExist:
-            # Handle case where item in FAISS doesn't exist in database
             continue
 
     return render(
@@ -157,48 +137,37 @@ def dashboard_view(request):
 @login_required
 def load_more_recommendations(request):
     try:
-        # Get offset parameter from query string (number of items to skip)
         offset = int(request.GET.get("offset", 0))
 
-        # Get count parameter (number of items to fetch)
         count = int(request.GET.get("count", 5))
 
-        # Get user profile and embedding
         user_profile = User_Profile.objects.get(user=request.user)
         user_embedding = user_profile.get_embedding()
 
-        # Get recommendations from offset to offset+count
         faiss_handler = FaissHandler(
             "RecApp/vector_db/item_index.faiss", "RecApp/vector_db/titles.txt"
         )
-        # We need to fetch more recommendations than just the requested count + offset
         raw_recommendations = faiss_handler.get_top_k(user_embedding, k=offset + count)
 
-        # Skip the already displayed recommendations
         raw_recommendations = raw_recommendations[offset : offset + count]
 
-        # Format the recommendations for JSON response
         formatted_recommendations = []
         for title, score in raw_recommendations:
             try:
-                # Lookup the item details from the database
                 item = Item_Profile.objects.get(title=title)
 
-                # Format the score to 2 decimal places
                 if isinstance(score, float):
                     score = round(score, 2)
-                    
-                # Get image URL from Pexels API
+
                 image_url = get_food_image(title)
 
-                # Add to formatted recommendations
                 formatted_recommendations.append(
                     {
                         "title": title,
                         "score": score,
                         "ner": item.ner,
                         "directions": item.directions,
-                        "image_url": image_url  # Add the image URL 
+                        "image_url": image_url,
                     }
                 )
             except Item_Profile.DoesNotExist:
@@ -210,17 +179,12 @@ def load_more_recommendations(request):
 
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
-    
-
-
-
 
 
 @require_POST
 @login_required
 def update_user_embedding(request):
     try:
-        # Parse the JSON data from request body
         data = json.loads(request.body)
         clicked_item_title = data.get("item_title")
 
@@ -229,30 +193,22 @@ def update_user_embedding(request):
                 {"status": "error", "message": "No item title provided"}, status=400
             )
 
-        # Get user profile
         user_profile = User_Profile.objects.get(user=request.user)
 
-        # Load item embeddings
         item_embeddings = load_item_embeddings()
 
-        # Check if item exists in our embeddings
         if clicked_item_title not in item_embeddings:
             return JsonResponse(
                 {"status": "error", "message": "Item not found"}, status=404
             )
 
-        # Get current user embedding and clicked item embedding
         old_user_embedding = user_profile.get_embedding()
         clicked_item_embedding = item_embeddings[clicked_item_title]
 
-        # Calculate new embedding using the formula
-        # new_user_embedding = 0.7 * old_user_embedding + 0.3 * clicked_item_embedding
         new_user_embedding = 0.7 * old_user_embedding + 0.3 * clicked_item_embedding
 
-        # Normalize the new user embedding
         new_user_embedding = new_user_embedding / np.linalg.norm(new_user_embedding)
 
-        # Update user profile with new embedding
         user_profile.set_embedding(new_user_embedding)
         user_profile.save()
 
