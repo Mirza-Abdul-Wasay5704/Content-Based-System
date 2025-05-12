@@ -200,6 +200,10 @@ def update_user_embedding(request):
 
         user_profile = User_Profile.objects.get(user=request.user)
 
+        if clicked_item_title not in user_profile.clicked_titles:
+            user_profile.clicked_titles.append(clicked_item_title)
+            user_profile.save()
+
         item_embeddings = load_item_embeddings()
 
         if clicked_item_title not in item_embeddings:
